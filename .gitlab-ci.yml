@@ -1,0 +1,3 @@
+include:
+  - project: 'root/pintos-guide'
+    file: '/templates/.gitlab-ci.yml'
