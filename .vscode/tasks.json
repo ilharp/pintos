@@ -1,0 +1,105 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "clean",
+      "type": "shell",
+      "command": "make clean",
+      "options": {
+        "cwd": "${workspaceFolder}/pintos/src"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "utils-make",
+      "type": "shell",
+      "command": "bear -- make",
+      "dependsOrder": "sequence",
+      "dependsOn": [
+        "clean"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}/pintos/src/utils"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "threads-make",
+      "type": "shell",
+      "command": "bear -- make",
+      "dependsOrder": "sequence",
+      "dependsOn": [
+        "utils-make"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}/pintos/src/threads"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "threads-check",
+      "type": "shell",
+      "command": "bear -- make check V=1",
+      "dependsOrder": "sequence",
+      "dependsOn": [
+        "threads-make"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}/pintos/src/threads"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "userprog-make",
+      "type": "shell",
+      "command": "bear -- make",
+      "dependsOrder": "sequence",
+      "dependsOn": [
+        "utils-make"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}/pintos/src/userprog"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "userprog-check",
+      "type": "shell",
+      "command": "bear -- make check V=1",
+      "dependsOrder": "sequence",
+      "dependsOn": [
+        "userprog-make"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}/pintos/src/userprog"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "filesys-make",
+      "type": "shell",
+      "command": "bear -- make",
+      "dependsOrder": "sequence",
+      "dependsOn": [
+        "utils-make"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}/pintos/src/filesys"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "filesys-check",
+      "type": "shell",
+      "command": "bear -- make check V=1",
+      "dependsOrder": "sequence",
+      "dependsOn": [
+        "filesys-make"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}/pintos/src/filesys"
+      },
+      "problemMatcher": []
+    }
+  ]
+}
