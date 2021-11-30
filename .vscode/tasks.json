@@ -39,7 +39,7 @@
     {
       "label": "threads-check",
       "type": "shell",
-      "command": "bear -- make check V=1",
+      "command": "bear -- make check VERBOSE=1",
       "dependsOrder": "sequence",
       "dependsOn": [
         "threads-make"
@@ -65,7 +65,7 @@
     {
       "label": "userprog-check",
       "type": "shell",
-      "command": "bear -- make check V=1",
+      "command": "bear -- make check VERBOSE=1",
       "dependsOrder": "sequence",
       "dependsOn": [
         "userprog-make"
@@ -91,7 +91,7 @@
     {
       "label": "filesys-check",
       "type": "shell",
-      "command": "bear -- make check V=1",
+      "command": "bear -- make check VERBOSE=1",
       "dependsOrder": "sequence",
       "dependsOn": [
         "filesys-make"
