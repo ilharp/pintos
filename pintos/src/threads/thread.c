@@ -587,14 +587,17 @@ allocate_tid (void)
 uint32_t thread_stack_ofs = offsetof (struct thread, stack);
 
 void
-blocked_thread_check (struct thread *t, void *aux UNUSED)
+check_blocked (struct thread *t, void *aux UNUSED)
 {
+  /* 检查线程阻塞。 */
   if (t->status == THREAD_BLOCKED && t->ticks_blocked > 0)
   {
+      /* 若线程阻塞，则更新计时。 */
       t->ticks_blocked--;
       if (t->ticks_blocked == 0)
       {
-          thread_unblock(t);
+          /* 若计时器已归零，则执行 thread_unblock(t) 以恢复线程。 */
+          thread_unblock (t);
       }
   }
 }

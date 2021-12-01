@@ -142,7 +142,10 @@ void thread_set_nice (int);
 int thread_get_recent_cpu (void);
 int thread_get_load_avg (void);
 
-/* 检查线程阻塞。 */
-void blocked_thread_check (struct thread *t, void *aux UNUSED);
+/* 检查线程阻塞。
+   对给定的线程 t，检查线程的阻塞状态。
+   若线程阻塞，则更新计时。
+   若计时器已归零，则执行 thread_unblock(t) 以恢复线程。 */
+void check_blocked (struct thread *t, void *aux UNUSED);
 
 #endif /* threads/thread.h */
