@@ -148,4 +148,8 @@ int thread_get_load_avg (void);
    若计时器已归零，则执行 thread_unblock(t) 以恢复线程。 */
 void check_blocked (struct thread *t, void *aux UNUSED);
 
+/* 进行线程优先级排序。 */
+bool
+thread_priority_compare (const struct list_elem *a, const struct list_elem *b, void *aux UNUSED);
+
 #endif /* threads/thread.h */
