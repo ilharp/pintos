@@ -94,6 +94,10 @@ struct thread
 
     int64_t ticks_blocked;              /* 线程阻塞的时间长度。 */
 
+    int base_priority;                  /* 线程基础优先级。 */
+    struct list locks;                  /* 线程当前持有的锁。 */
+    struct lock *lock_waiting;          /* 线程正在等待的锁。 */
+
     /* Shared between thread.c and synch.c. */
     struct list_elem elem;              /* List element. */
 
@@ -151,5 +155,14 @@ void check_blocked (struct thread *t, void *aux UNUSED);
 /* 进行线程优先级排序。 */
 bool
 thread_priority_compare (const struct list_elem *a, const struct list_elem *b, void *aux UNUSED);
+
+/* 获得锁。 */
+void thread_hold_lock (struct lock *);
+/* 释放锁。 */
+void thread_remove_lock (struct lock *);
+/* 捐赠优先级。 */
+void thread_donate_priority (struct thread *);
+/* 更新优先级。 */
+void thread_update_priority (struct thread *);
 
 #endif /* threads/thread.h */
