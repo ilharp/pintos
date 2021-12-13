@@ -179,12 +179,11 @@ thread_create (const char *name, int priority,
   if (t == NULL)
     return TID_ERROR;
 
-  /* 初始化线程阻塞时间。 */
-  t->ticks_blocked = 0;
-
   /* Initialize thread. */
   init_thread (t, name, priority);
   tid = t->tid = allocate_tid ();
+
+  enum intr_level old_level = intr_disable (); // 禁止中断
 
   /* Stack frame for kernel_thread(). */
   kf = alloc_frame (t, sizeof *kf);
@@ -200,6 +199,11 @@ thread_create (const char *name, int priority,
   sf = alloc_frame (t, sizeof *sf);
   sf->eip = switch_entry;
   sf->ebp = 0;
+
+  intr_set_level (old_level); // 释放中断状态
+
+  /* 初始化线程阻塞时间。 */
+  t->ticks_blocked = 0;
 
   /* Add to run queue. */
   thread_unblock (t);
@@ -473,8 +477,6 @@ is_thread (struct thread *t)
 static void
 init_thread (struct thread *t, const char *name, int priority)
 {
-  enum intr_level old_level;
-
   ASSERT (t != NULL);
   ASSERT (PRI_MIN <= priority && priority <= PRI_MAX);
   ASSERT (name != NULL);
@@ -488,11 +490,8 @@ init_thread (struct thread *t, const char *name, int priority)
   list_init (&t->locks);
   t->lock_waiting = NULL;
   t->magic = THREAD_MAGIC;
-
-  old_level = intr_disable ();
   // list_push_back (&all_list, &t->allelem);
   list_insert_ordered (&all_list, &t->allelem, (list_less_func *) &thread_priority_compare, NULL);
-  intr_set_level (old_level);
 }
 
 /* Allocates a SIZE-byte frame at the top of thread T's stack and
