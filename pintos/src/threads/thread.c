@@ -59,6 +59,8 @@ static unsigned thread_ticks;   /* # of timer ticks since last yield. */
    Controlled by kernel command-line option "-o mlfqs". */
 bool thread_mlfqs;
 
+fixed_point_t load_avg;
+
 static void kernel_thread (thread_func *, void *aux);
 
 static void idle (void *aux UNUSED);
@@ -109,6 +111,8 @@ thread_start (void)
   struct semaphore idle_started;
   sema_init (&idle_started, 0);
   thread_create ("idle", PRI_MIN, idle, &idle_started);
+
+  load_avg = fix_int (0);
 
   /* Start preemptive thread scheduling. */
   intr_enable ();
@@ -375,31 +379,30 @@ thread_get_priority (void)
 void
 thread_set_nice (int nice UNUSED)
 {
-  /* Not yet implemented. */
+  thread_current ()->nice = nice;
+  thread_mlfqs_update_priority (thread_current ());
+  thread_yield ();
 }
 
 /* Returns the current thread's nice value. */
 int
 thread_get_nice (void)
 {
-  /* Not yet implemented. */
-  return 0;
+  return thread_current ()->nice;
 }
 
 /* Returns 100 times the system load average. */
 int
 thread_get_load_avg (void)
 {
-  /* Not yet implemented. */
-  return 0;
+  return fix_round (fix_mul (load_avg, fix_int (100)));
 }
 
 /* Returns 100 times the current thread's recent_cpu value. */
 int
 thread_get_recent_cpu (void)
 {
-  /* Not yet implemented. */
-  return 0;
+  return fix_round (fix_mul (thread_current ()->recent_cpu, fix_int (100)));
 }
 
 /* Idle thread.  Executes when no other thread is ready to run.
@@ -489,6 +492,8 @@ init_thread (struct thread *t, const char *name, int priority)
   t->base_priority = priority;
   list_init (&t->locks);
   t->lock_waiting = NULL;
+  t->nice = 0;
+  t->recent_cpu = fix_int (0);
   t->magic = THREAD_MAGIC;
   // list_push_back (&all_list, &t->allelem);
   list_insert_ordered (&all_list, &t->allelem, (list_less_func *) &thread_priority_compare, NULL);
@@ -685,4 +690,73 @@ thread_update_priority (struct thread *t)
 
   t->priority = max_priority;
   intr_set_level (old_level);
+}
+
+void
+thread_mlfqs_increase_recent_cpu (void)
+{
+  ASSERT (thread_mlfqs);
+  ASSERT (intr_context ());
+
+  // 获取当前线程。
+  struct thread *current_thread = thread_current ();
+
+  // 确保线程非等待。
+  if (current_thread == idle_thread)
+    return;
+
+  // 自增 recent_cpu。
+  current_thread->recent_cpu = fix_add (current_thread->recent_cpu, fix_int (1));
+}
+
+void
+thread_mlfqs_update_priority (struct thread *t)
+{
+  // 确保线程非等待。
+  if (t == idle_thread)
+    return;
+
+  ASSERT (thread_mlfqs);
+  ASSERT (t != idle_thread);
+
+  // 计算线程优先级。
+  // 公式：
+  // priority = PRI_MAX - (recent_cpu / 4) - (nice * 2)
+  t->priority = fix_trunc (fix_sub (fix_sub (fix_int (PRI_MAX), fix_div (t->recent_cpu, fix_int (4))), fix_int (2 * t->nice)));
+
+  // 限制线程优先级范围。
+  t->priority = t->priority < PRI_MIN ? PRI_MIN : t->priority;
+  t->priority = t->priority > PRI_MAX ? PRI_MAX : t->priority;
+}
+
+void
+thread_mlfqs_update_load (void)
+{
+  ASSERT (thread_mlfqs);
+  ASSERT (intr_context ());
+
+  // 计算就绪线程的个数。
+  size_t ready_threads = list_size (&ready_list);
+
+  // 确保线程非等待。
+  if (thread_current () != idle_thread)
+    ready_threads++;
+
+  // 计算 load_avg。
+  // 公式：
+  // load_avg = (59/60)*load_avg + (1/60)*ready_threads
+  load_avg = fix_add (fix_div (fix_mul (load_avg, fix_int (59)), fix_int (60)), fix_div (fix_int (ready_threads), fix_int (60)));
+
+  struct thread *t;
+  struct list_elem *e = list_begin (&all_list);
+  for (; e != list_end (&all_list); e = list_next (e))
+  {
+    t = list_entry(e, struct thread, allelem);
+    if (t != idle_thread)
+    {
+      // 计算 recent_cpu。
+      t->recent_cpu = fix_add (fix_mul (fix_div (fix_mul (load_avg, fix_int (2)), fix_add (fix_mul (load_avg, fix_int (2)), fix_int (1))), t->recent_cpu), fix_int (t->nice));
+      thread_mlfqs_update_priority (t);
+    }
+  }
 }

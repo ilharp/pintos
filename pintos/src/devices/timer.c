@@ -175,6 +175,21 @@ timer_interrupt (struct intr_frame *args UNUSED)
 {
   ticks++;
   enum intr_level old_level = intr_disable ();
+
+  if (thread_mlfqs)
+  {
+    // 自增 recent_cpu。
+    thread_mlfqs_increase_recent_cpu ();
+
+    if (ticks % TIMER_FREQ == 0)
+      // 更新 load_avg 和 recent_cpu。
+      thread_mlfqs_update_load ();
+
+    else if (ticks % 4 == 0)
+      // 更新当前线程的优先级。
+      thread_mlfqs_update_priority (thread_current ());
+  }
+
   thread_foreach (check_blocked, NULL);
   intr_set_level (old_level);
   thread_tick ();

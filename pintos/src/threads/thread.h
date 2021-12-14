@@ -98,6 +98,9 @@ struct thread
     struct list locks;                  /* 线程当前持有的锁。 */
     struct lock *lock_waiting;          /* 线程正在等待的锁。 */
 
+     int nice;                           /* Niceness. */
+     fixed_point_t recent_cpu;           /* Recent CPU. */
+
     /* Shared between thread.c and synch.c. */
     struct list_elem elem;              /* List element. */
 
@@ -164,5 +167,12 @@ void thread_remove_lock (struct lock *);
 void thread_donate_priority (struct thread *);
 /* 更新优先级。 */
 void thread_update_priority (struct thread *);
+
+/* 自增 recent_cpu。 */
+void thread_mlfqs_increase_recent_cpu (void);
+/* 更新线程优先级。 */
+void thread_mlfqs_update_priority (struct thread *);
+/* 更新 load_avg 和 recent_cpu。 */
+void thread_mlfqs_update_load (void);
 
 #endif /* threads/thread.h */
