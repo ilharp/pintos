@@ -1,16 +1,7 @@
-CS 162 Group Repository
-=======================
+CS 162 - pintos
 
-This repository contains code for CS 162 group projects.
+* [Homework 2: Shell](report/homework2.md)
 
-**Design documents**
+* [Project 1: Threads](report/project1.md)
 
-* [Project 1: User Programs](doc/project1.md)
-* [Project 2: Threads](doc/project2.md)
-* [Project 3: File System](doc/project3.md)
-
-**Final reports**
-
-* [Project 1: User Programs](report/project1.md)
-* [Project 2: Threads](report/project2.md)
-* [Project 3: File System](report/project3.md)
+* [Project 2: User Programs](report/project2.md)
