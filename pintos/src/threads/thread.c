@@ -662,21 +662,21 @@ thread_remove_lock (struct lock *lock)
 void
 thread_donate_priority (struct thread *t)
 {
-  enum intr_level old_level = intr_disable ();
-  thread_update_priority (t);
+  enum intr_level old_level = intr_disable (); // 禁用中断
+  thread_update_priority (t); // 优先级更新
 
-  if (t->status == THREAD_READY)
+  if (t->status == THREAD_READY) // 判断线程状态
   {
     list_remove (&t->elem);
     list_insert_ordered (&ready_list, &t->elem, thread_priority_compare, NULL);
   }
-  intr_set_level (old_level);
+  intr_set_level (old_level); // 恢复中断
 }
 
 void
 thread_update_priority (struct thread *t)
 {
-  enum intr_level old_level = intr_disable ();
+  enum intr_level old_level = intr_disable (); // 禁用中断
   int max_priority = t->base_priority;
   int lock_priority;
 
@@ -685,11 +685,11 @@ thread_update_priority (struct thread *t)
     list_sort (&t->locks, lock_priority_compare, NULL);
     lock_priority = list_entry (list_front (&t->locks), struct lock, elem)->max_priority;
     if (lock_priority > max_priority)
-      max_priority = lock_priority;
+      max_priority = lock_priority; // 计算最大优先级
   }
 
-  t->priority = max_priority;
-  intr_set_level (old_level);
+  t->priority = max_priority; // 重新设置优先级为最大优先级
+  intr_set_level (old_level); // 恢复中断
 }
 
 void
